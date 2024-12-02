@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 import type { TransactionResponse } from "ethers";
-import { useWalletClient } from 'wagmi';
 import MemebankABI from "./memebank.json";
 import DogeABI from "./doge.json";
 import UsdtABI from "./usdt.json";
@@ -43,13 +42,10 @@ export class ContractService {
     private dogeContract!: (ethers.Contract & ERC20Functions);
     private oracleContract!: ethers.Contract;
 
-    constructor() {
-        if (typeof window !== 'undefined' && useWalletClient) {
-            this.provider = new ethers.BrowserProvider(useWalletClient as any, {
-                name: 'base-sepolia',
-                chainId: 84532
-            });
-        }
+    async setProvider(provider: ethers.BrowserProvider) {
+        this.provider = provider;
+        this.signer = await provider.getSigner();
+        await this.initializeContracts();
     }
 
     private async initializeContracts() {
@@ -57,10 +53,12 @@ export class ContractService {
             this.signer = await this.provider.getSigner();
         }
         
-        this.memebankContract = new ethers.Contract(MEMEBANK_ADDRESS, MemebankABI, this.signer);
-        this.usdtContract = new ethers.Contract(USDT_ADDRESS, UsdtABI, this.signer) as ethers.Contract & ERC20Functions;
-        this.dogeContract = new ethers.Contract(DOGE_ADDRESS, DogeABI, this.signer) as ethers.Contract & ERC20Functions;
-        this.oracleContract = new ethers.Contract(ORACLE_ADDRESS, OracleABI, this.signer);
+        if (this.signer) {
+            this.memebankContract = new ethers.Contract(MEMEBANK_ADDRESS, MemebankABI, this.signer);
+            this.usdtContract = new ethers.Contract(USDT_ADDRESS, UsdtABI, this.signer) as ethers.Contract & ERC20Functions;
+            this.dogeContract = new ethers.Contract(DOGE_ADDRESS, DogeABI, this.signer) as ethers.Contract & ERC20Functions;
+            this.oracleContract = new ethers.Contract(ORACLE_ADDRESS, OracleABI, this.signer);
+        }
     }
 
     private async approveToken(

@@ -9,9 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@dynamic-labs/ethereum": "^3.8.5",
-    "@dynamic-labs/sdk-react-core": "^3.8.5",
-    "@dynamic-labs/wagmi-connector": "^3.8.5",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-toast": "^1.2.2",
     "@rainbow-me/rainbowkit": "^2.2.0",

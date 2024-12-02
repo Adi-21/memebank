@@ -1,8 +1,8 @@
-declare global {
-    interface Window {
-        ethereum?: any;
-    }
-}
+// declare global {
+//     interface Window {
+//         ethereum?: any;
+//     }
+// }
 
 import { ethers } from "ethers";
 import type { TransactionResponse } from "ethers";
@@ -47,6 +47,10 @@ export class UniContractService {
     private usdtContract!: (ethers.Contract & ERC20Functions);
     private dogeContract!: (ethers.Contract & ERC20Functions);
     private oracleContract!: ethers.Contract;
+
+    setProvider(provider: ethers.BrowserProvider) {
+        this.provider = provider;
+    }
 
     public async initialize() {
         if (typeof window !== 'undefined' && window.ethereum) {

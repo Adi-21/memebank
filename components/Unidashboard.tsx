@@ -405,7 +405,8 @@ export const UniDashboard = () => {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="relative space-y-6">
-                                {inputFields.slice(0, 2).map(field => (
+                            {inputFields.slice(2).map(renderInputField)}
+                                {/* {inputFields.slice(0, 2).map(field => (
                                     <div key={field.name} className="space-y-2">
                                         <label className="text-pink-400 text-sm font-medium">
                                             {field.label}
@@ -424,7 +425,7 @@ export const UniDashboard = () => {
                                             </Button>
                                         </div>
                                     </div>
-                                ))}
+                                ))} */}
                             </CardContent>
                         </Card>
 

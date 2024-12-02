@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ContractService } from '@/utils/contract';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Wallet, Coins, PiggyBank, ArrowDownUp } from 'lucide-react';
+import { AlertCircle, Wallet, Coins, PiggyBank, ArrowDownUp, LayoutGrid } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { ethers } from 'ethers';
 import { motion } from 'framer-motion';
@@ -104,14 +104,12 @@ export default function MemeDashboard() {
         if (!isConnected || !userAddress) return;
 
         try {
-            // Get all data in parallel with error handling for each call
             const [userData, platformData, repaymentInfo] = await Promise.allSettled([
                 contractService.getUserData(userAddress),
                 contractService.getPlatformStats(),
                 contractService.getFormattedRepaymentAmount(userAddress)
             ]);
 
-            // Update states only for successful calls
             if (userData.status === 'fulfilled') {
                 setUserStats(prev => ({
                     ...prev,
@@ -138,7 +136,6 @@ export default function MemeDashboard() {
 
         } catch (error) {
             console.error('Error loading data:', error);
-            // Only show toast for critical errors
             if (error instanceof Error && !error.message.includes('user rejected')) {
                 toast({
                     title: 'Error loading data',
@@ -183,22 +180,19 @@ export default function MemeDashboard() {
                 description: 'Please wait for confirmation...'
             });
 
-            // Wait for transaction confirmation
             await tx.wait();
 
-            // Clear input
             setInputAmounts(prev => ({
                 ...prev,
                 [type === 'deposit' ? 'depositCollateral' : `${type}Amount`]: ''
             }));
 
-            // Update data with retries
             const retryCount = 3;
             for (let i = 0; i < retryCount; i++) {
                 try {
-                    await new Promise(resolve => setTimeout(resolve, 2000 * (i + 1))); // Increasing delays
+                    await new Promise(resolve => setTimeout(resolve, 2000 * (i + 1)));
                     await loadData();
-                    break; // Exit loop if successful
+                    break;
                 } catch (err) {
                     if (i === retryCount - 1) console.error('Failed to refresh data:', err);
                 }
@@ -226,7 +220,6 @@ export default function MemeDashboard() {
             const fetchData = async () => {
                 try {
                     await loadData();
-                    // Get initial price
                     const initialPrice = await contractService.getOraclePrice();
                     if (initialPrice !== '0') {
                         setPlatformStats(prev => ({
@@ -241,14 +234,10 @@ export default function MemeDashboard() {
 
             fetchData();
 
-            // Update data every 30 seconds
             const dataInterval = setInterval(loadData, 30000);
-
-            // Update price every 5 seconds
             const priceInterval = setInterval(async () => {
                 try {
                     const price = await contractService.getOraclePrice();
-                    console.log('Price update:', price); // Debug log
                     if (price !== '0') {
                         setPlatformStats(prev => ({
                             ...prev,
@@ -308,203 +297,160 @@ export default function MemeDashboard() {
         }
     ];
 
-    // const renderInputField = ({ label, name, type, buttonColor, buttonText, loadingText }: InputField) => (
-    //     <div key={name}>
-    //         <label htmlFor={name} className="block text-sm font-medium mb-1">
-    //             {label}
-    //         </label>
-    //         <div className="flex gap-2">
-    //             <input
-    //                 type="number"
-    //                 id={name}
-    //                 name={name}
-    //                 value={inputAmounts[name as keyof typeof inputAmounts]}
-    //                 onChange={handleInputChange}
-    //                 className="flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-    //                 placeholder="Amount"
-    //                 disabled={!isConnected || isLoading[type]}
-    //                 min="0"
-    //                 step="any"
-    //             />
-    //             <Button
-    //                 onClick={() => handleTransaction(type, inputAmounts[name as keyof typeof inputAmounts])}
-    //                 disabled={!isConnected || isLoading[type] || !inputAmounts[name as keyof typeof inputAmounts]}
-    //                 className={`${buttonColor} w-28`}
-    //             >
-    //                 {isLoading[type] ? loadingText : buttonText}
-    //             </Button>
-    //         </div>
-    //     </div>
-    // );
-
     const formatAddress = (address: string) => {
         return address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
     };
 
     return (
-        <div className="p-4 max-w-full mx-auto">
-            <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-black/40 p-6 rounded-2xl backdrop-blur-lg border border-[#0066FF]/20"
-            >
-                <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 }}
-                >
-                    <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-[#0066FF] to-[#0066FF]">
-                        Memebank Dashboard
-                    </h1>
-                    <p className="text-lg text-white/60">
-                        Deposit memecoin collateral and borrow stablecoins
-                    </p>
-                </motion.div>
-    
-                <div className="flex items-center gap-4">
-                    {isConnected ? (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="bg-black/60 backdrop-blur-md rounded-xl border border-[#0066FF]/30 p-4"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="w-2 h-2 rounded-full bg-[#0066FF] animate-pulse" />
-                                <div>
-                                    <p className="text-white font-medium">
-                                        {formatAddress(userAddress)}
-                                    </p>
-                                    <p className="text-[#0099FF] text-sm">
-                                        {chainId === 84532 ? 'Base Sepolia' : `Chain ID: ${chainId}`}
-                                    </p>
+        <div className="min-h-screen bg-[#030712]">
+            {/* Animated Background */}
+            <div className="fixed inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))]" />
+
+            {/* Navbar */}
+            <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/20 backdrop-blur-xl">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="flex h-16 items-center justify-between">
+                        <div className="flex items-center">
+                            <div className="flex items-center gap-2">
+                                <LayoutGrid className="h-8 w-8 text-blue-500" />
+                                <span className="text-xl font-bold text-white">MEMEBANK</span>
+                            </div>
+                        </div>
+
+                        {!isConnected ? (
+                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                <Button
+                                    onClick={connectWallet}
+                                    className="bg-gradient-to-r from-[#0066FF] to-[#00CCFF] text-white px-6 h-10 rounded-lg
+                                                flex items-center gap-2 transition-all duration-300
+                                                hover:shadow-[0_0_20px_rgba(0,153,255,0.5)]"
+                                >
+                                    <Wallet className="w-4 h-4" />
+                                    Connect Wallet
+                                </Button>
+                            </motion.div>
+                        ) : (
+                            <div className="flex items-center gap-4">
+                                <div className="px-4 py-2 bg-white/5 rounded-lg border border-white/10">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                        <div>
+                                            <p className="text-white font-medium">
+                                                {formatAddress(userAddress)}
+                                            </p>
+                                            <p className="text-sm text-gray-400">
+                                                {chainId === 84532 ? 'Base Sepolia' : `Chain ID: ${chainId}`}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                        >
-                            <Button
-                                onClick={connectWallet}
-                                className="h-12 px-8 bg-gradient-to-r from-[#0066FF] via-[#0099FF] to-[#0066FF] 
-                                         text-white font-semibold rounded-lg transition-all duration-300 
-                                         hover:shadow-[0_0_20px_rgba(0,153,255,0.5)]"
-                            >
-                                Connect Wallet
-                            </Button>
-                        </motion.div>
-                    )}
+                        )}
+                    </div>
                 </div>
-            </motion.div>
-    
-            {isConnected ? (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                >
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        {stats.map((stat, index) => (
-                            <motion.div
-                                key={stat.title}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3, delay: index * 0.1 }}
-                            >
-                                <Card className="bg-black/40 backdrop-blur-lg border border-[#0066FF]/20 hover:shadow-[0_0_20px_rgba(0,153,255,0.15)] transition-all duration-300">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium text-white/80">
-                                            {stat.title}
-                                        </CardTitle>
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#0066FF] to-[#0066FF] p-[1px]">
-                                            <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
-                                                <stat.icon className="h-4 w-4 text-[#0099FF]" />
+            </nav>
+
+            <main className="pt-24 p-4 max-w-7xl mx-auto">
+                {isConnected ? (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                    >
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                            {stats.map((stat, index) => (
+                                <motion.div
+                                    key={stat.title}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                                >
+                                    <Card className="bg-white/5 border-white/10 hover:border-white/20 
+                                                    transition-all duration-300">
+                                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                            <CardTitle className="text-sm font-medium text-gray-400">
+                                                {stat.title}
+                                            </CardTitle>
+                                            <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center">
+                                                <stat.icon className="h-4 w-4 text-blue-400" />
                                             </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#0066FF] to-[#0066FF]">
-                                            {stat.value}
-                                        </div>
-                                        <p className="text-xs text-white/60">
-                                            {stat.subtitle}
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        ))}
-                    </div>
-    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <DepositBorrow
-                            inputFields={inputFields}
-                            inputAmounts={inputAmounts}
-                            handleInputChange={handleInputChange}
-                            handleTransaction={handleTransaction}
-                            isConnected={isConnected}
-                            isLoading={isLoading}
-                        />
-                        <LendingRepayment
-                            inputFields={inputFields}
-                            inputAmounts={inputAmounts}
-                            handleInputChange={handleInputChange}
-                            handleTransaction={handleTransaction}
-                            isConnected={isConnected}
-                            isLoading={isLoading}
-                            repaymentDetails={repaymentDetails}
-                            calculateRepayment={async () => {
-                                const details = await contractService.calculateRepaymentAmount(userAddress);
-                                setRepaymentDetails({
-                                    ...repaymentDetails,
-                                    repaymentAmount: details.totalRepayment,
-                                    principal: details.principal,
-                                    interest: details.interestAmount
-                                });
-                            }}
-                        />
-                    </div>
-                </motion.div>
-            ) : (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                >
-                    <Card className="bg-black/40 backdrop-blur-lg border border-[#0066FF]/20 overflow-hidden relative">
-                        <motion.div
-                            className="absolute inset-0 opacity-10"
-                            animate={{
-                                background: [
-                                    'radial-gradient(circle at 0% 0%, #0066FF, transparent)',
-                                    'radial-gradient(circle at 100% 100%, #0066FF, transparent)',
-                                    'radial-gradient(circle at 0% 0%, #0066FF, transparent)'
-                                ]
-                            }}
-                            transition={{ duration: 10, repeat: Infinity }}
-                        />
-                        <CardContent className="relative z-10 flex flex-col items-center gap-6 p-12">
-                            <motion.div
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                                className="w-16 h-16 rounded-full bg-gradient-to-r from-[#0066FF] to-[#0066FF] p-[2px]"
-                            >
-                                <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
-                                    <AlertCircle className="h-8 w-8 text-[#0099FF]" />
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="text-2xl font-bold text-white">
+                                                {stat.value}
+                                            </div>
+                                            <p className="text-sm text-gray-400">
+                                                {stat.subtitle}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                </motion.div>
+                            ))}
+                        </div>
+
+                        {/* Transaction Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <DepositBorrow
+                                inputFields={inputFields}
+                                inputAmounts={inputAmounts}
+                                handleInputChange={handleInputChange}
+                                handleTransaction={handleTransaction}
+                                isConnected={isConnected}
+                                isLoading={isLoading}
+                            />
+                            <LendingRepayment
+                                inputFields={inputFields}
+                                inputAmounts={inputAmounts}
+                                handleInputChange={handleInputChange}
+                                handleTransaction={handleTransaction}
+                                isConnected={isConnected}
+                                isLoading={isLoading}
+                                repaymentDetails={repaymentDetails}
+                                calculateRepayment={async () => {
+                                    const details = await contractService.calculateRepaymentAmount(userAddress);
+                                    setRepaymentDetails({
+                                        ...repaymentDetails,
+                                        repaymentAmount: details.totalRepayment,
+                                        principal: details.principal,
+                                        interest: details.interestAmount
+                                    });
+                                }}
+                            />
+                        </div>
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                    >
+                        <Card className="max-w-lg mx-auto bg-white/5 border-white/10 overflow-hidden relative">
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-purple-900/20" />
+                            <CardContent className="relative z-10 flex flex-col items-center gap-6 p-12">
+                                <div className="text-center space-y-4">
+                                    <h2 className="text-2xl font-bold text-white">
+                                        Welcome to MemeBank
+                                    </h2>
+                                    <p className="text-lg text-gray-400">
+                                        Connect your wallet to access MemeBank features and start managing your assets.
+                                    </p>
+                                    <Button
+                                        onClick={connectWallet}
+                                        className="bg-gradient-to-r from-[#0066FF] to-[#00CCFF] text-white px-8 py-4 rounded-lg
+                                                    flex items-center justify-center gap-2 transition-all duration-300
+                                                    hover:shadow-[0_0_20px_rgba(0,153,255,0.5)] w-full"
+                                    >
+                                        <Wallet className="w-5 h-5" />
+                                        Connect Wallet
+                                    </Button>
                                 </div>
-                            </motion.div>
-                            <div className="text-center space-y-3">
-                                <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#0066FF] to-[#0066FF]">
-                                    Connect Wallet to Continue
-                                </h2>
-                                <p className="text-lg text-white/60">
-                                    Please connect your wallet to access Memebank features
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-            )}
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                )}
+            </main>
         </div>
     );
 }
+

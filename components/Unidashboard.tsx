@@ -169,7 +169,7 @@ export const UniDashboard = () => {
             });
 
             await tx.wait();
-            
+
             setInputAmounts(prev => ({
                 ...prev,
                 [type === 'deposit' ? 'depositCollateral' : `${type}Amount`]: ''
@@ -215,10 +215,10 @@ export const UniDashboard = () => {
             const { address } = await contractService.connectWallet();
             setUserAddress(address);
             setIsConnected(true);
-            
+
             // Load data after successful connection
             await loadData();
-            
+
             toast({
                 title: 'Connected Successfully',
                 description: `Connected to address: ${address.slice(0, 6)}...${address.slice(-4)}`
@@ -339,12 +339,12 @@ export const UniDashboard = () => {
                                         <p>Total Amount Due: {repaymentDetails.repaymentAmount} USDT</p>
                                         <p>Principal: {repaymentDetails.principal} USDT</p>
                                         <p>Interest: {repaymentDetails.interest} USDT</p>
-                                        <p>Deadline: {repaymentDetails.deadline > 0 ? 
-                                            new Date(repaymentDetails.deadline).toLocaleString() : 
+                                        <p>Deadline: {repaymentDetails.deadline > 0 ?
+                                            new Date(repaymentDetails.deadline).toLocaleString() :
                                             'N/A'}
                                         </p>
                                         <p>Status: {repaymentDetails.status}</p>
-                                        <Button 
+                                        <Button
                                             onClick={async () => {
                                                 const details = await contractService.calculateRepaymentAmount(userAddress);
                                                 setRepaymentDetails(prev => ({

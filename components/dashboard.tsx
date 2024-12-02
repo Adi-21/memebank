@@ -10,6 +10,7 @@ import { ethers } from 'ethers';
 import { AnimatePresence, motion } from 'framer-motion';
 import { DepositBorrow } from './deposit-borrow';
 import { LendingRepayment } from './lending-repayment';
+import { useWalletClient } from 'wagmi';
 
 interface InputField {
     label: string;
@@ -276,7 +277,11 @@ export default function MemeDashboard() {
 
     const connectWallet = async () => {
         try {
-            const provider = new ethers.BrowserProvider(window.ethereum);
+            if (!window.ethereum) {
+                throw new Error("Please install a Web3 wallet");
+            }
+            
+            const provider = new ethers.BrowserProvider(useWalletClient as any);
             const signer = await provider.getSigner();
             const address = await signer.getAddress();
             const network = await provider.getNetwork();
@@ -288,7 +293,7 @@ export default function MemeDashboard() {
             console.error('Error connecting wallet:', error);
             toast({
                 title: 'Connection Failed',
-                description: 'Failed to connect wallet',
+                description: error instanceof Error ? error.message : 'Failed to connect wallet',
                 variant: 'destructive'
             });
         }

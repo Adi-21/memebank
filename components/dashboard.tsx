@@ -370,7 +370,7 @@ export default function MemeDashboard() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black p-6">
+        <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black p-6">
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -537,6 +537,6 @@ export default function MemeDashboard() {
                     </Card>
                 </motion.div>
             )}
-        </div>
+        </main>
     );
 }

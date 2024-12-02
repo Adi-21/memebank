@@ -19,7 +19,7 @@ export const DashboardWrapper = () => {
 
     return (
         <>
-            <div className="fixed top-14 right-56 z-10">
+            <div className="fixed top-14 right-64 z-10">
                 <Button 
                     onClick={() => setSelectedChainId(null)}
                     className={`h-12 px-6 relative overflow-hidden rounded-lg font-semibold transition-all duration-300 

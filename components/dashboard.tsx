@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { AlertCircle, Wallet, Coins, PiggyBank, ArrowDownUp } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { ethers } from 'ethers';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { DepositBorrow } from './deposit-borrow';
 import { LendingRepayment } from './lending-repayment';
 
@@ -295,16 +295,39 @@ export default function MemeDashboard() {
     };
 
     const stats = [
-        { title: 'Collateral', value: userStats.collateral, subtitle: 'DOGE', icon: Wallet },
-        { title: 'Borrowed', value: userStats.borrowed, subtitle: 'USDT', icon: Coins },
-        { title: 'Deposited', value: userStats.deposited, subtitle: 'USDT', icon: PiggyBank },
+        {
+            title: 'Collateral',
+            value: userStats.collateral,
+            subtitle: 'DOGE',
+            icon: Wallet,
+            gradient: 'from-blue-500/20 to-blue-600/20',
+            textColor: 'text-blue-400'
+        },
+        {
+            title: 'Borrowed',
+            value: userStats.borrowed,
+            subtitle: 'USDT',
+            icon: Coins,
+            gradient: 'from-purple-500/20 to-purple-600/20',
+            textColor: 'text-purple-400'
+        },
+        {
+            title: 'Deposited',
+            value: userStats.deposited,
+            subtitle: 'USDT',
+            icon: PiggyBank,
+            gradient: 'from-green-500/20 to-green-600/20',
+            textColor: 'text-green-400'
+        },
         {
             title: 'DOGE Price',
             value: platformStats.currentPrice && platformStats.currentPrice !== '0'
                 ? `$${Number(platformStats.currentPrice).toFixed(6)}`
                 : 'Loading...',
             subtitle: 'DOGE/USDT',
-            icon: ArrowDownUp
+            icon: ArrowDownUp,
+            gradient: 'from-cyan-500/20 to-cyan-600/20',
+            textColor: 'text-cyan-400'
         }
     ];
 
@@ -342,100 +365,104 @@ export default function MemeDashboard() {
     };
 
     return (
-        <div className="p-4 max-w-full mx-auto">
+        <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black p-6">
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-black/40 p-6 rounded-2xl backdrop-blur-lg border border-[#0066FF]/20"
+                className="flex flex-col md:flex-row justify-between items-center mb-8 p-6 
+                         bg-gray-800/40 backdrop-blur-xl rounded-2xl border border-blue-500/20"
             >
-                <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 }}
-                >
-                    <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-[#0066FF] to-[#0066FF]">
+                <div className="space-y-2">
+                    <h1 className="text-4xl font-bold text-transparent bg-clip-text 
+                                 bg-gradient-to-r from-blue-400 to-blue-600">
                         Memebank Dashboard
                     </h1>
-                    <p className="text-lg text-white/60">
+                    <p className="text-gray-400">
                         Deposit memecoin collateral and borrow stablecoins
                     </p>
-                </motion.div>
-    
-                <div className="flex items-center gap-4">
+                </div>
+
+                {/* Connection Status */}
+                <div className="mt-4 md:mt-0">
                     {isConnected ? (
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
+                            initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="bg-black/60 backdrop-blur-md rounded-xl border border-[#0066FF]/30 p-4"
+                            className="flex items-center gap-3 px-4 py-2 bg-gray-700/50 
+                                     backdrop-blur-lg rounded-xl border border-blue-500/20"
                         >
-                            <div className="flex items-center gap-3">
-                                <div className="w-2 h-2 rounded-full bg-[#0066FF] animate-pulse" />
-                                <div>
-                                    <p className="text-white font-medium">
-                                        {formatAddress(userAddress)}
-                                    </p>
-                                    <p className="text-[#0099FF] text-sm">
-                                        {chainId === 84532 ? 'Base Sepolia' : `Chain ID: ${chainId}`}
-                                    </p>
-                                </div>
+                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                            <div>
+                                <p className="text-white font-medium">{formatAddress(userAddress)}</p>
+                                <p className="text-sm text-blue-400">
+                                    {chainId === 84532 ? 'Base Sepolia' : `Chain ID: ${chainId}`}
+                                </p>
                             </div>
                         </motion.div>
                     ) : (
-                        <motion.div
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                        <Button
+                            onClick={connectWallet}
+                            className="bg-gradient-to-r from-blue-500 to-blue-600 text-white 
+                                        px-6 py-6 mb-2 font-bold text-lg rounded-xl hover:shadow-lg 
+                                        hover:shadow-blue-500/25 transition-all duration-300
+                                        hover:scale-105"
                         >
-                            <Button
-                                onClick={connectWallet}
-                                className="h-12 px-8 bg-gradient-to-r from-[#0066FF] via-[#0099FF] to-[#0066FF] 
-                                         text-white font-semibold rounded-lg transition-all duration-300 
-                                         hover:shadow-[0_0_20px_rgba(0,153,255,0.5)]"
-                            >
-                                Connect Wallet
-                            </Button>
-                        </motion.div>
+                            <Wallet className="w-4 h-4" />
+                            Connect Wallet
+                        </Button>
                     )}
                 </div>
             </motion.div>
-    
+
             {isConnected ? (
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        {stats.map((stat, index) => (
-                            <motion.div
-                                key={stat.title}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.3, delay: index * 0.1 }}
-                            >
-                                <Card className="bg-black/40 backdrop-blur-lg border border-[#0066FF]/20 hover:shadow-[0_0_20px_rgba(0,153,255,0.15)] transition-all duration-300">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-sm font-medium text-white/80">
-                                            {stat.title}
-                                        </CardTitle>
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#0066FF] to-[#0066FF] p-[1px]">
-                                            <div className="w-full h-full rounded-full bg-black flex items-center justify-center">
-                                                <stat.icon className="h-4 w-4 text-[#0099FF]" />
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#0066FF] to-[#0066FF]">
-                                            {stat.value}
-                                        </div>
-                                        <p className="text-xs text-white/60">
-                                            {stat.subtitle}
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        ))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <AnimatePresence>
+                            {stats.map((stat, index) => (
+                                <motion.div
+                                    key={stat.title}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                                >
+                                    <Card className="group bg-gray-800/40 backdrop-blur-xl border border-blue-500/20 
+                                         rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-blue-500/10 
+                                         transition-all duration-300 hover:-translate-y-1">
+                                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                            <CardTitle className={`text-sm font-medium ${stat.textColor}`}>
+                                                {stat.title}
+                                            </CardTitle>
+                                            <motion.div
+                                                whileHover={{ rotate: 15 }}
+                                                className={`w-10 h-10 rounded-xl bg-gradient-to-r ${stat.gradient} 
+                                                p-2 flex items-cent er justify-center group-hover:shadow-lg 
+                                                transition-all duration-300`}
+                                            >
+                                                <stat.icon className={`h-5 w-5 ${stat.textColor}`} />
+                                            </motion.div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <motion.div
+                                                initial={{ scale: 1 }}
+                                                whileHover={{ scale: 1.02 }}
+                                                className="text-2xl font-bold text-white"
+                                            >
+                                                {stat.value}
+                                            </motion.div>
+                                            <p className="text-xs text-gray-400 mt-1">
+                                                {stat.subtitle}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
                     </div>
-    
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <DepositBorrow
                             inputFields={inputFields}

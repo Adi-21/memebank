@@ -270,7 +270,7 @@ export const UniDashboard = () => {
     }, [isConnected, loadData]);
 
     return (
-        <div className="min-h-screen bg-[#0d1117] p-6 max-w-full mx-auto">
+        <main className="min-h-screen bg-[#0d1117] p-6 max-w-full mx-auto">
             <div className="flex justify-between items-center mb-8 p-6 
                       bg-gray-900/40 backdrop-blur-xl rounded-2xl border border-pink-500/20">
                 <div>
@@ -494,7 +494,7 @@ export const UniDashboard = () => {
                     </div>
                 </>
             )}
-        </div>
+        </main>
     );
 };
 

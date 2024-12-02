@@ -1,11 +1,6 @@
-declare global {
-    interface Window {
-        ethereum?: any;
-    }
-}
-
 import { ethers } from "ethers";
 import type { TransactionResponse } from "ethers";
+import { useWalletClient } from 'wagmi';
 import MemebankABI from "./memebank.json";
 import DogeABI from "./doge.json";
 import UsdtABI from "./usdt.json";
@@ -49,8 +44,8 @@ export class ContractService {
     private oracleContract!: ethers.Contract;
 
     constructor() {
-        if (typeof window !== 'undefined' && window.ethereum) {
-            this.provider = new ethers.BrowserProvider(window.ethereum, {
+        if (typeof window !== 'undefined' && useWalletClient) {
+            this.provider = new ethers.BrowserProvider(useWalletClient as any, {
                 name: 'base-sepolia',
                 chainId: 84532
             });

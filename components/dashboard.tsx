@@ -10,7 +10,6 @@ import { ethers } from 'ethers';
 import { AnimatePresence, motion } from 'framer-motion';
 import { DepositBorrow } from './deposit-borrow';
 import { LendingRepayment } from './lending-repayment';
-import { useWalletClient } from 'wagmi';
 
 interface InputField {
     label: string;
@@ -62,6 +61,7 @@ export default function MemeDashboard() {
     const [userAddress, setUserAddress] = useState<string>('');
     const [isConnected, setIsConnected] = useState(false);
     const [chainId, setChainId] = useState<number>(0);
+    const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
 
     const [repaymentDetails, setRepaymentDetails] = useState({
         repaymentAmount: '0',
@@ -100,6 +100,12 @@ export default function MemeDashboard() {
         isEmergency: false,
         collateralRatio: '0'
     });
+
+    useEffect(() => {
+        if (provider) {
+            contractService.setProvider(provider);
+        }
+    }, [provider, contractService]);
 
     const loadData = useCallback(async () => {
         if (!isConnected || !userAddress) return;
@@ -278,17 +284,23 @@ export default function MemeDashboard() {
     const connectWallet = async () => {
         try {
             if (!window.ethereum) {
-                throw new Error("Please install a Web3 wallet");
+                throw new Error("Please install MetaMask");
             }
             
-            const provider = new ethers.BrowserProvider(useWalletClient as any);
+            const provider = new ethers.BrowserProvider(window.ethereum);
             const signer = await provider.getSigner();
             const address = await signer.getAddress();
             const network = await provider.getNetwork();
-
+            
+            setProvider(provider);
             setUserAddress(address);
             setChainId(Number(network.chainId));
             setIsConnected(true);
+
+            // Initialize contract service
+            if (contractService) {
+                contractService.setProvider(provider);
+            }
         } catch (error) {
             console.error('Error connecting wallet:', error);
             toast({
@@ -298,6 +310,31 @@ export default function MemeDashboard() {
             });
         }
     };
+
+    // Listen for account changes
+    useEffect(() => {
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', (accounts: string[]) => {
+                if (accounts.length > 0) {
+                    setUserAddress(accounts[0]);
+                } else {
+                    setIsConnected(false);
+                    setUserAddress('');
+                }
+            });
+
+            window.ethereum.on('chainChanged', (newChainId: string) => {
+                setChainId(Number(newChainId));
+            });
+        }
+
+        return () => {
+            if (window.ethereum) {
+                window.ethereum.removeListener('accountsChanged', () => {});
+                window.ethereum.removeListener('chainChanged', () => {});
+            }
+        };
+    }, []);
 
     const stats = [
         {
